@@ -95,7 +95,6 @@ int calc_dir(int a, int b) {
         return -1;
 }
 
-// WARNING: Works only for horz and vert lines
 void Field::mark_line(Line l) {
     int dir_x, dir_y;
 
