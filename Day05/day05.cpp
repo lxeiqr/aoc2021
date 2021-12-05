@@ -4,7 +4,16 @@
 
 struct Point {
     int x,y;
+
+    bool operator==(Point b);
 };
+
+bool Point::operator==(Point b) {
+    if(this->x == b.x && this->y == b.y)
+        return true;
+    else
+        return false;
+}
     
 struct Line {
     Point p1, p2;
@@ -61,9 +70,6 @@ struct Field {
     ~Field();
 
     void mark_line(Line l);
-private:
-    void mark_horz(Line l);
-    void mark_vert(Line l);
 };
 
 Field::Field(int w, int h) {
@@ -80,29 +86,31 @@ Field::~Field() {
     delete p;
 }
 
-void Field::mark_horz(Line l) {
-    int x1 = std::min(l.p1.x, l.p2.x);
-    int x2 = std::max(l.p1.x, l.p2.x);
-
-    for(int i = x1; i <= x2; i++)
-        p[i + l.p1.y * w]++;
-}
-
-void Field::mark_vert(Line l) {
-    int y1 = std::min(l.p1.y, l.p2.y);
-    int y2 = std::max(l.p1.y, l.p2.y);
-
-    for(int i = y1; i <= y2; i++)
-        p[l.p1.x + i * w]++;
+int calc_dir(int a, int b) {
+    if(a == b)
+        return 0;
+    else if(a < b)
+        return 1;
+    else
+        return -1;
 }
 
 // WARNING: Works only for horz and vert lines
 void Field::mark_line(Line l) {
-    bool is_horz = (l.p1.y == l.p2.y);
-    if(is_horz)
-        mark_horz(l);
-    else
-        mark_vert(l);
+    int dir_x, dir_y;
+
+    dir_x = calc_dir(l.p1.x, l.p2.x);
+    dir_y = calc_dir(l.p1.y, l.p2.y);
+
+    Point p0 = l.p1;
+    while(!(p0 == l.p2)) {
+        p[p0.x + p0.y * w]++;
+
+        p0.x += dir_x;
+        p0.y += dir_y;
+    }
+
+    p[l.p2.x + l.p2.y * w]++;
 }
 
 int solve(std::vector<Line> ls) {
@@ -129,13 +137,9 @@ int main() {
         ls.push_back(l);
     }
 
-    /*
-    for(Line l : ls) {
-        std::cout << "(" << l.p1.x << "," << l.p1.y << ") -> (" << l.p2.x << "," << l.p2.y << ")" << std::endl; 
-    }
-    */
+    int part_b = solve(ls); 
 
-    // Filter out unused lines
+    // Remove diagonals
     for(int i = 0; i < ls.size(); i++) {
         if(is_diagonal(ls[i])) {
             ls.erase(ls.begin() + i);
@@ -143,5 +147,8 @@ int main() {
         }
     }
 
-    std::cout << "Solution: " << solve(ls) << std::endl;
+    int part_a = solve(ls);
+
+    std::cout << "Part A: " << part_a << std::endl
+            << "Part B: " << part_b << std::endl;
 }
