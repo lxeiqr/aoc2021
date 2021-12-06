@@ -1,5 +1,3 @@
-local inspect = require('inspect')
-
 local SIM_TIME_A = 80
 local SIM_TIME_B = 256
 local FISH_CYCLE = 7
