@@ -1,6 +1,7 @@
 #include <iostream>
 #include <map>
 #include <vector>
+#include <unistd.h>
 
 struct Edge {
     std::string l, r;
@@ -9,7 +10,7 @@ struct Edge {
 struct Node {
     std::vector<std::string> ngh;
     bool is_small = false;
-    bool checked = false;
+    int checked = 0;
 };
 
 typedef std::map<std::string, Node> Graph;
@@ -22,8 +23,8 @@ Edge parse_line(std::string s) {
     return e;
 }
 
-void dfs(Graph &graph, std::string path, std::string node_key, std::vector<std::string> &paths) {
-    graph[node_key].checked = true;
+void dfs(Graph &graph, std::string path, std::string node_key, std::vector<std::string> &paths, bool extra_cave) {
+    graph[node_key].checked++;
 
     if(path.empty())
         path = node_key;
@@ -37,11 +38,19 @@ void dfs(Graph &graph, std::string path, std::string node_key, std::vector<std::
     }
 
     for(std::string ns : graph[node_key].ngh) {
-        if(!(graph[ns].is_small && graph[ns].checked))
-            dfs(graph, path, ns, paths);
+        if(ns == "start")
+            continue;
+
+        if(std::islower(ns[0]) == false)
+            dfs(graph, path, ns, paths, extra_cave);
+        else if(graph[ns].checked == 0)
+            dfs(graph, path, ns, paths, extra_cave);
+        else if(extra_cave)
+            dfs(graph, path, ns, paths, false);
+
     }
 
-    graph[node_key].checked = false;
+    graph[node_key].checked--;
 }
 
 int main() {
@@ -58,6 +67,11 @@ int main() {
     }
 
     std::vector<std::string> paths;
-    dfs(graph, "", "start", paths);
-    std::cout << paths.size() << std::endl;
+
+    dfs(graph, "", "start", paths, false);
+    std::cout << "A: " << paths.size() << std::endl;
+
+    paths.clear();
+    dfs(graph, "", "start", paths, true);
+    std::cout << "B: " << paths.size() << std::endl;
 }
